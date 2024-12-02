@@ -23,6 +23,12 @@ where
 // in the directory of dayx
 pub fn write_day_input_to_file(day: &str, session: &str) -> Result<String, Box<dyn Error>>
 {
+    let file_path = format!("day{}/input.txt", day);
+
+    if Path::new(&file_path).exists() {
+        return Ok(file_path);
+    }
+
     let url = format!("https://adventofcode.com/2024/day/{}/input", day);
     let session_cookie = format!("session={}", session);
     let client = Client::new(); 
@@ -39,7 +45,7 @@ pub fn write_day_input_to_file(day: &str, session: &str) -> Result<String, Box<d
         .error_for_status()?
         .text()?;
 
-    let file_path = format!("day{}/input.txt", day);
+
     let mut file = File::create(&file_path)?;
     file.write_all(response.as_bytes())?;
     Ok(file_path)
