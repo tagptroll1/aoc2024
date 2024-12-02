@@ -1,63 +1,128 @@
-use std::collections::{BinaryHeap, HashMap, HashSet};
 use utils::{write_day_input_to_file, read_lines};
+use itertools::Itertools;
 use std::io::{self};
 use std::env;
 
 fn main() -> io::Result<()>{
     let session_cookie = env::var("AOC_SESSION_COOKIE").unwrap_or_else(|_| "0".to_string());
 
-    // Query day 1 for input
-    let input_path = write_day_input_to_file("1", session_cookie.as_str()).unwrap();
+    // Query day 2 for input
+    let input_path = write_day_input_to_file("2", session_cookie.as_str()).unwrap();
     let lines = read_lines(input_path)?
         .collect::<Result<Vec<String>, io::Error>>()?;
 
+    let test_lines = vec![
+        "7 6 4 2 1",
+        "1 2 7 8 9",
+        "9 7 6 2 1",
+        "1 3 2 4 5",
+        "8 6 4 4 1",
+        "1 3 6 7 9"
+    ];
+
     // Part 1
-    // Create BinaryHeaps for left and right number - implicitly sorted
-    let mut left_side = BinaryHeap::new();
-    let mut right_side = BinaryHeap::new();
+    let mut count = 0;
+    for line in lines.iter() {
+        // Split "1 2 3" to [1, 2, 3]
+        let numbers = line.split_whitespace().map(|s| s.parse::<i32>().unwrap()).collect::<Vec<i32>>();
+        let safe = is_entry_safe(numbers);
 
-    for line in &lines {
-        let mut split = line.split_whitespace();
-
-        left_side.push(split.next().unwrap().parse::<u32>().unwrap());
-        right_side.push(split.next().unwrap().parse::<u32>().unwrap());
-    }
-
-    // Calculate sum of all differences in Part 1
-    let mut sum = 0;
-    while !left_side.is_empty() && !right_side.is_empty() {
-        let left = left_side.pop().unwrap();
-        let right = right_side.pop().unwrap();
-
-       sum += left.abs_diff(right);
-    }
-
-    println!("Part 1 Sum: {}", sum);
-
-    // Part 2
-    // Create a hashset for all unique numbers on left
-    // And hashset for counting occurrences on right side
-    let mut exists_left = HashSet::new();
-    let mut count_dict = HashMap::new();
-    for line in lines {
-        let mut split = line.split_whitespace();
-        let left = split.next().unwrap().parse::<u32>().unwrap();
-        let right = split.next().unwrap().parse::<u32>().unwrap();
-
-        // Insert left side, and increase right side by 1, if it doesn't exist give it a default value of 0
-        exists_left.insert(left);
-        *count_dict.entry(right).or_insert(0) += 1;
-    }
-
-    // Go through all existing numbers on left, multiply them with occurrences on right
-    let mut part_2_sum = 0;
-    for exist in exists_left.iter() {
-        match count_dict.get(exist)  {
-            Some(count) => part_2_sum += exist * count,
-            None => {}
+        if safe {
+            count += 1;
+            println!("safe:   {}", line);
+        } else {
+            println!("unsafe: {}", line);
         }
     }
-    println!("Part 2 Sum: {}", part_2_sum);
 
+    println!("Day 1 safe count: {}", count);
+    // Day 2
+    // The program is allowed to ignore one unsafe entry.
+    // It should do so by simply removing it, and retrying the sequences
+    let mut count_day2 = 0;
+    for line in lines.iter() {
+        let mut numbers = line.split_whitespace().map(|s| s.parse::<i32>().unwrap()).collect::<Vec<i32>>();
+        let mut safe = is_entry_safe(numbers.clone());
+
+        if safe {
+            count_day2 = count_day2 + 1;
+            println!("safe:   {}", line);
+        } else  {
+            safe = try_every_damn_number(numbers.clone());
+            if safe {
+                count_day2 = count_day2 + 1;
+            } else {
+                println!("Unsafe: {}", line);
+            }
+        }
+    }
+
+    println!("Day 2 safe count: {}", count_day2);
     Ok(())
+}
+
+fn try_every_damn_number(numbers: Vec<i32>) -> bool {
+    for index in 0..numbers.len() {
+        let mut new_numbers = numbers.clone();
+        new_numbers.remove(index);
+        if is_entry_safe(new_numbers.clone()) {
+            let line = new_numbers.iter().map(|n| n.to_string()).join(" ");
+            println!("safe:   {}", line);
+            return true;
+        }
+    }
+    false
+}
+// is_entry_safe will return true if the entry is safe, and -1 as the second return value
+// if there is an unsafe number in the entry the index of said number will be set to the second return value
+fn is_entry_safe(line: Vec<i32>) -> bool {
+    // Check the numbers in order if
+    // ascending order is expected, check for ascending order
+    // descending order is expected, check for descending order
+    // any sequence of two equal numbers is unsafe
+    // and jump between numbers besides 1-3 is unsafe
+    let step_size = is_step_diff_small(&line);
+    let is_asc = is_ascending(&line);
+    let is_desc = is_descending(&line);
+
+    step_size && (is_asc || is_desc)
+}
+
+fn is_step_diff_small(line: &Vec<i32>) -> bool {
+    for (i, number) in line.iter().enumerate() {
+        if i == line.len() - 1 {
+            break;
+        }
+        let next = line[i + 1];
+        let diff = number.abs_diff(next);
+        if diff < 1 || diff > 3 {
+            return false;
+        }
+    }
+    true
+}
+fn is_ascending(line: &Vec<i32>) -> bool {
+    for (i, number) in line.iter().enumerate() {
+        if i == line.len() - 1 {
+            return true;
+        }
+        let next = line[i + 1];
+        if next < *number {
+            return false;
+        }
+    }
+    true
+}
+
+fn is_descending(line: &Vec<i32>) -> bool {
+    for (i, number) in line.iter().enumerate() {
+        if i == line.len() - 1 {
+            return true;
+        }
+        let next = line[i + 1];
+        if next > *number {
+            return false;
+        }
+    }
+    true
 }
