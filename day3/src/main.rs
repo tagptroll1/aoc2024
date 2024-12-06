@@ -1,15 +1,14 @@
-use utils::{write_day_input_to_file, read_lines};
-use std::io::{self};
-use std::env;
 use regex::Regex;
+use std::env;
+use std::io::{self};
+use utils::{read_lines, write_day_input_to_file};
 
-fn main() -> io::Result<()>{
+fn main() -> io::Result<()> {
     let session_cookie = env::var("AOC_SESSION_COOKIE").unwrap_or_else(|_| "0".to_string());
 
     // Query day 3 for input
     let input_path = write_day_input_to_file("3", session_cookie.as_str()).unwrap();
-    let lines = read_lines(input_path)?
-        .collect::<Result<Vec<String>, io::Error>>()?;
+    let lines = read_lines(input_path)?.collect::<Result<Vec<String>, io::Error>>()?;
 
     // Today the input we can treat the input as just one line.
     let line = lines.join("");
@@ -38,7 +37,7 @@ fn part_one(input: &str) -> i64 {
 fn part_two(input: &str) -> i64 {
     let re_match_mul = r"mul\((?P<first>\d{1,3}),(?P<second>\d{1,3})\)";
     let re_match_dont = r"(?P<false>don't)";
-    let re_match_do =  r"(?P<true>do)";
+    let re_match_do = r"(?P<true>do)";
     // Make sure to match don't first as do will always be true on a don't and consume the do
     let regex_string = format!("{}|{}|{}", re_match_mul, re_match_dont, re_match_do);
     let re = Regex::new(regex_string.as_str()).unwrap();
@@ -68,13 +67,14 @@ mod tests {
     use super::*;
     #[test]
     fn test_part_1() {
-        let test_input ="xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+        let test_input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
         assert_eq!(161, part_one(test_input));
     }
 
     #[test]
     fn test_part_2() {
-        let test_input ="xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+        let test_input =
+            "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
         assert_eq!(48, part_two(test_input));
     }
 }

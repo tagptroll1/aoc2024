@@ -1,15 +1,14 @@
 use std::collections::{BinaryHeap, HashMap, HashSet};
-use utils::{write_day_input_to_file, read_lines};
-use std::io::{self};
 use std::env;
+use std::io::{self};
+use utils::{read_lines, write_day_input_to_file};
 
-fn main() -> io::Result<()>{
+fn main() -> io::Result<()> {
     let session_cookie = env::var("AOC_SESSION_COOKIE").unwrap_or_else(|_| "0".to_string());
 
     // Query day 1 for input
     let input_path = write_day_input_to_file("1", session_cookie.as_str()).unwrap();
-    let lines = read_lines(input_path)?
-        .collect::<Result<Vec<String>, io::Error>>()?;
+    let lines = read_lines(input_path)?.collect::<Result<Vec<String>, io::Error>>()?;
 
     // Part 1
     // Create BinaryHeaps for left and right number - implicitly sorted
@@ -29,7 +28,7 @@ fn main() -> io::Result<()>{
         let left = left_side.pop().unwrap();
         let right = right_side.pop().unwrap();
 
-       sum += left.abs_diff(right);
+        sum += left.abs_diff(right);
     }
 
     println!("Part 1 Sum: {}", sum);
@@ -52,7 +51,7 @@ fn main() -> io::Result<()>{
     // Go through all existing numbers on left, multiply them with occurrences on right
     let mut part_2_sum = 0;
     for exist in exists_left.iter() {
-        match count_dict.get(exist)  {
+        match count_dict.get(exist) {
             Some(count) => part_2_sum += exist * count,
             None => {}
         }

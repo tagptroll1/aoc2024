@@ -1,15 +1,14 @@
-use utils::{write_day_input_to_file, read_lines};
 use itertools::Itertools;
-use std::io::{self};
 use std::env;
+use std::io::{self};
+use utils::{read_lines, write_day_input_to_file};
 
-fn main() -> io::Result<()>{
+fn main() -> io::Result<()> {
     let session_cookie = env::var("AOC_SESSION_COOKIE").unwrap_or_else(|_| "0".to_string());
 
     // Query day 2 for input
     let input_path = write_day_input_to_file("2", session_cookie.as_str()).unwrap();
-    let lines = read_lines(input_path)?
-        .collect::<Result<Vec<String>, io::Error>>()?;
+    let lines = read_lines(input_path)?.collect::<Result<Vec<String>, io::Error>>()?;
 
     let test_lines = vec![
         "7 6 4 2 1",
@@ -17,14 +16,17 @@ fn main() -> io::Result<()>{
         "9 7 6 2 1",
         "1 3 2 4 5",
         "8 6 4 4 1",
-        "1 3 6 7 9"
+        "1 3 6 7 9",
     ];
 
     // Part 1
     let mut count = 0;
     for line in lines.iter() {
         // Split "1 2 3" to [1, 2, 3]
-        let numbers = line.split_whitespace().map(|s| s.parse::<i32>().unwrap()).collect::<Vec<i32>>();
+        let numbers = line
+            .split_whitespace()
+            .map(|s| s.parse::<i32>().unwrap())
+            .collect::<Vec<i32>>();
         let safe = is_entry_safe(numbers);
 
         if safe {
@@ -41,13 +43,16 @@ fn main() -> io::Result<()>{
     // It should do so by simply removing it, and retrying the sequences
     let mut count_day2 = 0;
     for line in lines.iter() {
-        let mut numbers = line.split_whitespace().map(|s| s.parse::<i32>().unwrap()).collect::<Vec<i32>>();
+        let mut numbers = line
+            .split_whitespace()
+            .map(|s| s.parse::<i32>().unwrap())
+            .collect::<Vec<i32>>();
         let mut safe = is_entry_safe(numbers.clone());
 
         if safe {
             count_day2 = count_day2 + 1;
             println!("safe:   {}", line);
-        } else  {
+        } else {
             safe = try_every_damn_number(numbers.clone());
             if safe {
                 count_day2 = count_day2 + 1;
