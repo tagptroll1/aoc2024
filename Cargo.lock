@@ -144,6 +144,14 @@ version = "0.1.0"
 dependencies = [
  "utils",
 ]
+
+[[package]]
+name = "day6"
+version = "0.1.0"
+dependencies = [
+ "utils",
+]
+
 [[package]]
 name = "displaydoc"
 version = "0.2.5"
